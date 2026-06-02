@@ -425,9 +425,20 @@ function doSubmit(){
   for(var j=0;j<PR.length;j++)sub+=QT[PR[j].id]*PR[j].p;
   var disc=discOn?Math.round(sub*0.3):0;
   var net=sub-disc;
-  var slipName='';
   var sf=document.getElementById('sf').files;
-  if(sf&&sf[0])slipName=sf[0].name;
+  if(sf&&sf[0]){
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      var b64=ev.target.result.split(',')[1];
+      var mime=sf[0].type||'image/jpeg';
+      sendPayload(name,phone,date,addr,admin,total,sub,disc,net,b64,mime,sf[0].name);
+    };
+    reader.readAsDataURL(sf[0]);
+  } else {
+    sendPayload(name,phone,date,addr,admin,total,sub,disc,net,'','','');
+  }
+}
+function sendPayload(name,phone,date,addr,admin,total,sub,disc,net,b64,mime,slipName){
   var payload=JSON.stringify({
     orderDate:date,orderTime:document.getElementById('ft').value,
     customerName:name,phone:phone,address:addr,
@@ -435,7 +446,10 @@ function doSubmit(){
     qty_bl004:QT.BL004,qty_bl005:QT.BL005,qty_bl006:QT.BL006,qty_bl007:QT.BL007,
     totalUnits:total,subtotal:sub,discount:disc,netPrice:net,
     discountNote:document.getElementById('fno').value||(discOn?'ส่วนลด 30%':'ราคาเต็ม'),
-    slipFilename:slipName,admin:admin,
+    slipFilename:slipName,
+    slipBase64:b64,
+    slipMime:mime,
+    admin:admin,
     channel:document.getElementById('fch').value,
     channelAccount:document.getElementById('fchacc').value.trim()
   });
