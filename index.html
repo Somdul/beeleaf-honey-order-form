@@ -455,8 +455,10 @@ function sendPayload(name,phone,date,addr,admin,total,sub,disc,net,b64,mime,slip
   });
   var btn=document.getElementById('sbtn');btn.disabled=true;
   document.getElementById('bn-l').style.display='flex';
-  fetch(WURL,{method:'POST',mode:'no-cors',body:payload})
-    .then(function(){
+  fetch(WURL,{method:'POST',body:payload,headers:{'Content-Type':'application/json'}})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.status==='error'){hideBn();showEr('Script error: '+d.message);return;}
       for(var i=0;i<PR.length;i++)ST[PR[i].id]=Math.max(0,ST[PR[i].id]-QT[PR[i].id]);
       rSC();rHL();hideBn();
       showOk('บันทึกเรียบร้อย · '+name+' · '+total+' ขวด · '+fmt(net)+(discOn?' (ลด 30%)':''));
