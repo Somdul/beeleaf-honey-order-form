@@ -404,18 +404,30 @@ function doReset(){
   if(discOn)toggleDisc();
   calc();rSlip({stopPropagation:function(){}});hideBn();
 }
+function updateChAccount(){
+  var ch=document.getElementById('fch').value;
+  var acc=document.getElementById('fchacc');
+  var ph={'LINE':'เช่น @ชื่อ line','Website':'เช่น อีเมล / ชื่อบัญชี','Messenger':'เช่น ชื่อ Facebook','LINE Shopping':'เช่น ชื่อบัญชี LINE','โทรศัพท์':'เช่น 080-000-0000','อื่นๆ':'ระบุ account หรือชื่อ'};
+  acc.placeholder=ph[ch]||'เช่น @ชื่อline, ชื่อ fb...';
+}
 function doSubmit(){
   var name=document.getElementById('fn').value.trim();
   var phone=document.getElementById('fp').value.trim();
   var date=document.getElementById('fd').value;
   var addr=document.getElementById('fad').value.trim();
   var admin=document.getElementById('fa').value.trim();
-  var total=0;for(var i=0;i<PR.length;i++)total+=(parseInt(document.getElementById('q-'+PR[i].id).value)||0);
+  var total=0;
+  for(var i=0;i<PR.length;i++)total+=(parseInt(document.getElementById('q-'+PR[i].id).value)||0);
   hideBn();
   if(!name||!phone||!date||!addr||!admin){showEr('กรุณากรอกข้อมูลที่จำเป็น: ชื่อ, เบอร์โทร, วันที่, ที่อยู่, ผู้รับผิดชอบ');return;}
   if(total===0){showEr('กรุณาเลือกน้ำผึ้งอย่างน้อย 1 ขวด');return;}
-
-  var slipName='';var sf=document.getElementById('sf').files;if(sf&&sf[0])slipName=sf[0].name;
+  var sub=0;
+  for(var j=0;j<PR.length;j++)sub+=QT[PR[j].id]*PR[j].p;
+  var disc=discOn?Math.round(sub*0.3):0;
+  var net=sub-disc;
+  var slipName='';
+  var sf=document.getElementById('sf').files;
+  if(sf&&sf[0])slipName=sf[0].name;
   var payload=JSON.stringify({
     orderDate:date,orderTime:document.getElementById('ft').value,
     customerName:name,phone:phone,address:addr,
@@ -432,20 +444,7 @@ function doSubmit(){
   fetch(WURL,{method:'POST',mode:'no-cors',body:payload})
     .then(function(){
       for(var i=0;i<PR.length;i++)ST[PR[i].id]=Math.max(0,ST[PR[i].id]-QT[PR[i].id]);
-      function updateChAccount(){
-  var ch=document.getElementById('fch').value;
-  var acc=document.getElementById('fchacc');
-  var placeholders={
-    'LINE':'เช่น @somdul_line',
-    'Website':'เช่น somdul@email.com',
-    'Messenger':'เช่น somdul.bee',
-    'LINE Shopping':'เช่น ชื่อบัญชี LINE',
-    'โทรศัพท์':'เช่น 080-000-0000',
-    'อื่นๆ':'ระบุ account หรือชื่อ'
-  };
-  acc.placeholder=placeholders[ch]||'เช่น @somdul, somdul.bee';
-}
-rSC();rHL();hideBn();
+      rSC();rHL();hideBn();
       showOk('บันทึกเรียบร้อย · '+name+' · '+total+' ขวด · '+fmt(net)+(discOn?' (ลด 30%)':''));
       doReset();
     })
